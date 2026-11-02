@@ -153,7 +153,7 @@ bool PlayerHousingMgr::IsUnlocked(Player const* player, PieceDefinition const& p
 bool PlayerHousingMgr::Unlock(Player* player, PieceDefinition const& piece, bool announce)
 {
     // Playerbots never collect pieces.
-    if (player->GetSession()->IsBot())
+    if (player->GetSession()->IsHeadless())
         return false;
 
     // Unlocking it gives the character who did it one to place; more cost a copy each. Only the
@@ -178,7 +178,7 @@ bool PlayerHousingMgr::Unlock(Player* player, PieceDefinition const& piece, bool
 
 void PlayerHousingMgr::EvaluateUnlocks(Player* player, uint8 ruleType, uint32 param, bool announce, uint32 value)
 {
-    if (!_enabled || !player || _unlockAll || player->GetSession()->IsBot())
+    if (!_enabled || !player || _unlockAll || player->GetSession()->IsHeadless())
         return;
 
     std::vector<PieceDefinition const*> candidates;
@@ -251,7 +251,7 @@ uint32 PlayerHousingMgr::CreditPastProgress(Player* player)
 
 void PlayerHousingMgr::OnCreatureKilled(Player* killer, uint32 creatureEntry)
 {
-    if (!_enabled || !killer || killer->GetSession()->IsBot())
+    if (!_enabled || !killer || killer->GetSession()->IsHeadless())
         return;
 
     {
@@ -411,7 +411,7 @@ bool PlayerHousingMgr::GetOneOfEverything(Player* player, std::string& reason)
 
 bool PlayerHousingMgr::GmUnlock(Player* target, std::string const& what, bool unlock, std::string& reason)
 {
-    if (unlock && target->GetSession()->IsBot())
+    if (unlock && target->GetSession()->IsHeadless())
     {
         reason = "Playerbots don't do housing.";
         return false;

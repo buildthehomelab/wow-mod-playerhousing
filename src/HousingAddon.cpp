@@ -58,7 +58,7 @@ namespace
 
 void PlayerHousingMgr::SendAddon(Player* player, std::string const& text) const
 {
-    if (!player || !player->GetSession() || player->GetSession()->IsBot())
+    if (!player || !player->GetSession() || player->GetSession()->IsHeadless())
         return;
 
     // A whisper to themselves, always the plain kind: for a GM in GM mode the core would send

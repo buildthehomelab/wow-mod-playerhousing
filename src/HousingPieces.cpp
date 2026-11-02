@@ -258,7 +258,7 @@ bool PlayerHousingMgr::TakePiece(Player* player, uint32 itemEntry)
 
 bool PlayerHousingMgr::SweepHousingItems(Player* player, bool bankToo)
 {
-    if (!_enabled || !player || player->GetSession()->IsBot())
+    if (!_enabled || !player || player->GetSession()->IsHeadless())
         return false;
 
     // Where each one is first, then they go: the positions don't move as items are destroyed.

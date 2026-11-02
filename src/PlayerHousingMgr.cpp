@@ -680,7 +680,7 @@ void PlayerHousingMgr::OnPlayerLogin(Player* player)
         return;
 
     // Playerbots get no house, items or unlocks; one that logged out on an island still leaves it.
-    bool bot = player->GetSession()->IsBot();
+    bool bot = player->GetSession()->IsHeadless();
     if (!bot)
         EnsureHouse(HomeOf(player));
 
@@ -733,7 +733,7 @@ void PlayerHousingMgr::OnPlayerLogout(Player* player)
     if (!_enabled || !player)
         return;
 
-    if (!player->GetSession()->IsBot())
+    if (!player->GetSession()->IsHeadless())
     {
         if (IsOnOwnIsland(player))
             SetCharacterFlag(player->GetGUID().GetCounter(), CHAR_FLAG_HOME_AT_LOGOUT, false);
@@ -869,7 +869,7 @@ void PlayerHousingMgr::OnPlayerUpdate(Player* player, uint32 diffMs)
         if (!inArea || player->IsGameMaster() || player->GetSession()->GetSecurity() > SEC_PLAYER)
             return;
 
-        if (player->GetSession()->IsBot() && TryAdmitGroupBot(player))
+        if (player->GetSession()->IsHeadless() && TryAdmitGroupBot(player))
             return;
 
         // Only people let in with a House Key or a steward belong on the housing island.
@@ -958,7 +958,7 @@ void PlayerHousingMgr::OnArrived(Player* player, ObjectGuid::LowType ownerGuid)
     else
         Say(player, Acore::StringFormat("Welcome to {}'s island.", ownerName));
 
-    if (!player->GetSession()->IsBot())
+    if (!player->GetSession()->IsHeadless())
         if (Player* owner = FindOwnerOnline(ownerGuid))
             if (owner != player)
                 Say(owner, Acore::StringFormat("{} arrived on your island.", player->GetName()));
@@ -1476,7 +1476,7 @@ bool PlayerHousingMgr::EnterHouse(Player* player, ObjectGuid::LowType ownerGuid,
     }
 
     // Kept up to date on the way in too, in case the server stops without logging them out.
-    if (!player->GetSession()->IsBot())
+    if (!player->GetSession()->IsHeadless())
     {
         if (ownerGuid == HomeOf(player))
             SetCharacterFlag(player->GetGUID().GetCounter(), CHAR_FLAG_HOME_AT_LOGOUT, false);
@@ -1606,7 +1606,7 @@ bool PlayerHousingMgr::Unstuck(Player* player, std::string& reason)
 
 void PlayerHousingMgr::SendAddonState(Player* player) const
 {
-    if (!player || !player->GetSession() || player->GetSession()->IsBot())
+    if (!player || !player->GetSession() || player->GetSession()->IsHeadless())
         return;
 
     ObjectGuid::LowType owner = GetIslandOwner(player);
