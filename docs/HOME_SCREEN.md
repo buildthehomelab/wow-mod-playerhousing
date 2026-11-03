@@ -32,9 +32,7 @@ Set `CharacterSelect.HomeScreen = 1` in worldserver.conf. Then, as a GM, on your
 To reach character select with the home screen on, click **Character select** in the window, or hold
 Shift while the character list loads.
 
-Still to do before players get this: everything else that lists an account's characters has to leave the
-viewer out, including modules that pick the last played character or offer a list to spend things on,
-and playerbots must never log one in. So far it's for testing on a GM's own account.
+`.home enable` is a GM command for now, while this is tested on a GM's own account.
 
 ## How it works
 
@@ -44,6 +42,12 @@ and playerbots must never log one in. So far it's for testing on a GM's own acco
 - **The phase** is the same kind a house uses: an exact phase of its own, so the viewer sees nobody else
   and nothing spawned in the normal world. The ground and its scenery stay.
 - **Player hooks** don't run for a viewer: the core skips them, so no module treats it as someone playing.
+- **Its name** is random, so it can't be worked out from the account or taken first. Nothing a player types
+  can reach a viewer by name, and the viewer can't chat, invite or join a channel. Outside GM accounts it
+  only runs `.home`.
+- **Other modules** leave viewers out with the core's `HomeViewer.h`: `SQL_NOT_HOME_VIEWER` in a query on
+  `characters`, `IsHomeViewer` for a player or a GUID. The header explains how to include it so a module
+  still builds on a core without home screens.
 - **The character list** decides who to enter by itself, each time it goes out: the character Play chose
   if there is one, nobody if the player asked for character select, otherwise the viewer.
 - **The addon** talks to the server over the addon command channel:
