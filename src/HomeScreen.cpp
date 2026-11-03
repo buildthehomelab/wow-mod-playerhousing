@@ -3,6 +3,7 @@
 
 #include "PlayerHousingMgr.h"
 
+#include "AllCommandScript.h"
 #include "CharacterCache.h"
 #include "Chat.h"
 #include "CommandScript.h"
@@ -18,6 +19,8 @@
 #include "WorldPacket.h"
 #include "WorldScript.h"
 #include "WorldSession.h"
+
+#include <string_view>
 
 using namespace Acore::ChatCommands;
 
@@ -76,32 +79,42 @@ namespace
         return player && player->IsHomeViewer() ? player : nullptr;
     }
 
-    // Consonant and vowel pairs: a character name can't have three of a letter in a row, and has
-    // twelve letters at most, which leaves room for over three million accounts.
-    std::string ViewerName(uint32 account)
+    // Random, so that the account doesn't tell anyone the name and nobody can take it first. Twelve
+    // letters, the most a character name has, in consonant and vowel pairs: a name can't have three
+    // of a letter in a row. That's 100 to the sixth names, far too many to try.
+    std::string RandomViewerName()
     {
         static constexpr char const* CONSONANTS = "bcdfghjklmnpqrstvwxz";
-        std::string name = "Hv";
-        do
+        static constexpr char const* VOWELS = "aeiou";
+        std::string name;
+        for (uint8 i = 0; i < 6; ++i)
         {
-            name += CONSONANTS[account % 20];
-            name += 'a';
-            account /= 20;
-        } while (account);
+            name += CONSONANTS[urand(0, 19)];
+            name += VOWELS[urand(0, 4)];
+        }
+        name[0] = char(name[0] - 'a' + 'A');
         return name;
+    }
+
+    // Empty if ten tries found nothing: they can fail on the realm's reserved and profanity lists,
+    // or a shorter name length limit, which no later try gets past.
+    std::string FreeViewerName()
+    {
+        for (uint8 i = 0; i < 10; ++i)
+        {
+            std::string name = RandomViewerName();
+            if (ObjectMgr::CheckPlayerName(name, true) == CHAR_NAME_SUCCESS && !sCharacterCache->GetCharacterGuidByName(name))
+                return name;
+        }
+        return {};
     }
 
     bool CreateViewer(WorldSession* session, std::string& reason)
     {
-        std::string const name = ViewerName(session->GetAccountId());
-        if (ObjectMgr::CheckPlayerName(name, true) != CHAR_NAME_SUCCESS)
+        std::string const name = FreeViewerName();
+        if (name.empty())
         {
-            reason = "The viewer's name " + name + " isn't a valid character name here.";
-            return false;
-        }
-        if (sCharacterCache->GetCharacterGuidByName(name))
-        {
-            reason = "The viewer's name " + name + " is taken.";
+            reason = "No valid name for the viewer: check the realm's character name rules.";
             return false;
         }
 
@@ -129,7 +142,11 @@ namespace
         trans->Append("UPDATE characters SET home_viewer = 1, logout_time = 0, {} WHERE guid = {}", PlotUpdate(ConfiguredPlot()), viewer->GetGUID().GetCounter());
         CharacterDatabase.CommitTransaction(trans);
 
+#if __has_include("HomeViewer.h")
+        sCharacterCache->AddCharacterCacheEntry(viewer->GetGUID(), session->GetAccountId(), viewer->GetName(), viewer->getGender(), viewer->getRace(), viewer->getClass(), viewer->GetLevel(), true);
+#else
         sCharacterCache->AddCharacterCacheEntry(viewer->GetGUID(), session->GetAccountId(), viewer->GetName(), viewer->getGender(), viewer->getRace(), viewer->getClass(), viewer->GetLevel());
+#endif
         return true;
     }
 }
@@ -146,6 +163,24 @@ public:
         player->SetDisplayId(INVISIBLE_DISPLAY);
         player->SetUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
         player->SetPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
+    }
+};
+
+// A viewer only runs .home: everything else would treat it as a character someone plays, from
+// bots logging in for it to a module's own commands. GM accounts keep theirs, for testing.
+class mod_home_screen_allcommandscript : public AllCommandScript
+{
+public:
+    mod_home_screen_allcommandscript() : AllCommandScript("mod_home_screen_allcommandscript", { ALLCOMMANDHOOK_ON_TRY_EXECUTE_COMMAND }) { }
+
+    bool OnTryExecuteCommand(ChatHandler& handler, std::string_view cmdStr) override
+    {
+        WorldSession* session = handler.GetSession();
+        Player* player = session ? session->GetPlayer() : nullptr;
+        if (!player || !player->IsHomeViewer() || session->IsGMAccount())
+            return true;
+
+        return cmdStr.substr(0, cmdStr.find(' ')) == "home";
     }
 };
 
@@ -271,6 +306,7 @@ public:
 void AddHomeScreenScripts()
 {
     new mod_home_screen_playerscript();
+    new mod_home_screen_allcommandscript();
     new mod_home_screen_worldscript();
     new mod_home_screen_commandscript();
 }

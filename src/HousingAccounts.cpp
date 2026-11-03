@@ -8,6 +8,14 @@
 #include "WorldSession.h"
 #include "WorldSessionMgr.h"
 
+// A core with home screens keeps a character row per account that nobody plays. Other cores have none.
+#if __has_include("HomeViewer.h")
+#include "HomeViewer.h"
+#else
+#define SQL_NOT_HOME_VIEWER "1"
+inline bool IsHomeViewer(Player const*) { return false; }
+#endif
+
 #include <vector>
 
 // One island per account. Every character of an account shares it, with its owned pieces,
@@ -34,7 +42,7 @@ Player* PlayerHousingMgr::FindOwnerOnline(ObjectGuid::LowType home) const
     uint32 account = sCharacterCache->GetCharacterAccountIdByGuid(ObjectGuid::Create<HighGuid::Player>(home));
     WorldSession* session = account ? sWorldSessionMgr->FindSession(account) : nullptr;
     Player* player = session ? session->GetPlayer() : nullptr;
-    return player && player->IsInWorld() ? player : nullptr;
+    return player && player->IsInWorld() && !IsHomeViewer(player) ? player : nullptr;
 }
 
 ObjectGuid::LowType PlayerHousingMgr::HomeOfCharacter(ObjectGuid::LowType guid) const
@@ -55,14 +63,14 @@ ObjectGuid::LowType PlayerHousingMgr::HomeOfAccount(uint32 account, ObjectGuid::
         stored = (*result)[0].Get<uint32>();
 
     ObjectGuid::LowType home = 0;
-    if (stored && CharacterDatabase.Query("SELECT 1 FROM characters WHERE guid={} AND account={}", stored, account))
+    if (stored && CharacterDatabase.Query("SELECT 1 FROM characters WHERE guid={} AND account={} AND " SQL_NOT_HOME_VIEWER, stored, account))
         home = stored;
     else if (stored)
     {
         // Its home character was deleted (or kept aside by the core's undelete): the island
         // moves, as it is, to the character played last.
         if (QueryResult result = CharacterDatabase.Query(
-                "SELECT guid FROM characters WHERE account={} AND guid<>{} ORDER BY logout_time DESC LIMIT 1", account, stored))
+                "SELECT guid FROM characters WHERE account={} AND guid<>{} AND " SQL_NOT_HOME_VIEWER " ORDER BY logout_time DESC LIMIT 1", account, stored))
             home = (*result)[0].Get<uint32>();
         if (!home)
             home = fallback;
@@ -239,7 +247,7 @@ bool PlayerHousingMgr::RehomeAccountOf(ObjectGuid::LowType deleted)
 
     ObjectGuid::LowType next = 0;
     if (QueryResult other = CharacterDatabase.Query(
-            "SELECT guid FROM characters WHERE account={} AND guid<>{} ORDER BY logout_time DESC LIMIT 1", account, deleted))
+            "SELECT guid FROM characters WHERE account={} AND guid<>{} AND " SQL_NOT_HOME_VIEWER " ORDER BY logout_time DESC LIMIT 1", account, deleted))
         next = (*other)[0].Get<uint32>();
 
     std::lock_guard<std::recursive_mutex> guard(_lock);
