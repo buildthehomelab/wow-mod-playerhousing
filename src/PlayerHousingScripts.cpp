@@ -430,6 +430,14 @@ public:
             return false;
         }
 
+        // Off, the module's tables needn't exist, and a query to a missing table stops the server.
+        if (!sPlayerHousingMgr->IsEnabled())
+        {
+            handler->SendSysMessage("Housing is off on this server.");
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
         bool gm = player->GetSession()->GetSecurity() >= SEC_GAMEMASTER;
         std::vector<std::string_view> tokens = Acore::Tokenize(args ? args : "", ' ', false);
         if (tokens.empty())
