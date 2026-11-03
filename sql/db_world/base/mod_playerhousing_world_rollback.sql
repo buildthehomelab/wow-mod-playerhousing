@@ -7,8 +7,8 @@ PREPARE housing_stmt FROM @SQL;
 EXECUTE housing_stmt;
 DEALLOCATE PREPARE housing_stmt;
 DELETE FROM `creature_template_movement` WHERE `CreatureId` = 900203;
-DELETE FROM `creature_template_model` WHERE `CreatureID` IN (900200, 900201, 900202, 900203);
-DELETE FROM `creature_template` WHERE `entry` IN (900200, 900201, 900202, 900203);
+DELETE FROM `creature_template_model` WHERE `CreatureID` IN (900200, 900201, 900202, 900203, 900204);
+DELETE FROM `creature_template` WHERE `entry` IN (900200, 900201, 900202, 900203, 900204);
 DELETE FROM `npc_vendor` WHERE `entry` = 900200;
 -- The ghosts' models and displays (curated pieces, then the catalog).
 DELETE FROM `creaturedisplayinfo_dbc` WHERE `ID` BETWEEN 61100 AND 62999 OR `ID` BETWEEN 100000 AND 104999;
