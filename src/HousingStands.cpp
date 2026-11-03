@@ -29,15 +29,6 @@ using namespace Housing;
 
 namespace
 {
-    // The slots a mirror image shows, in the order of SMSG_MIRRORIMAGE_DATA.
-
-    constexpr uint8 MIRROR_SLOTS[] =
-    {
-        EQUIPMENT_SLOT_HEAD, EQUIPMENT_SLOT_SHOULDERS, EQUIPMENT_SLOT_BODY, EQUIPMENT_SLOT_CHEST,
-        EQUIPMENT_SLOT_WAIST, EQUIPMENT_SLOT_LEGS, EQUIPMENT_SLOT_FEET, EQUIPMENT_SLOT_WRISTS,
-        EQUIPMENT_SLOT_HANDS, EQUIPMENT_SLOT_BACK, EQUIPMENT_SLOT_TABARD
-    };
-
     // The figures a stand can take, in the order "Change the figure" goes through them.
     constexpr uint8 RACES[] = { RACE_HUMAN, RACE_DWARF, RACE_NIGHTELF, RACE_GNOME, RACE_DRAENEI,
                                 RACE_ORC, RACE_UNDEAD_PLAYER, RACE_TAUREN, RACE_TROLL, RACE_BLOODELF };
@@ -456,7 +447,7 @@ bool PlayerHousingMgr::SendMannequinLook(WorldSession* session, ObjectGuid const
     data << uint32(look.displayId);
     data << uint8(look.race);
     data << uint8(look.gender);
-    data << uint8(CLASS_WARRIOR);
+    data << uint8(look.classId);
     data << uint8(look.skin);
     data << uint8(look.face);
     data << uint8(look.hair);
@@ -467,6 +458,18 @@ bool PlayerHousingMgr::SendMannequinLook(WorldSession* session, ObjectGuid const
         data << uint32(display);
     session->SendPacket(&data);
     return true;
+}
+
+void PlayerHousingMgr::SetFigureLook(ObjectGuid const& guid, MannequinLook const& look)
+{
+    std::lock_guard<std::recursive_mutex> guard(_lock);
+    _mannequins[guid] = look;
+}
+
+void PlayerHousingMgr::RemoveFigure(Map* map, ObjectGuid const& guid)
+{
+    std::lock_guard<std::recursive_mutex> guard(_lock);
+    RemoveSpawned(map, guid);
 }
 
 bool PlayerHousingMgr::ChangeStand(Player* player, uint32 placementId, Placement const& after, std::string const& label, std::string& reason)

@@ -73,6 +73,10 @@ namespace Housing
     // display is this plus the item's offset from 900000 (the client patch adds them).
     constexpr uint32 GHOST_DISPLAY_BASE = 60000;
 
+    // The equipment slots a mirror image shows (EquipmentSlots), in the order of SMSG_MIRRORIMAGE_DATA:
+    // head, shoulders, shirt, chest, waist, legs, feet, wrists, hands, back, tabard.
+    constexpr uint8 MIRROR_SLOTS[] = { 0, 2, 3, 4, 5, 6, 7, 8, 9, 14, 18 };
+
     // Krook's welcome tour: each quest completes when the player does the thing.
     constexpr uint32 QUEST_TOUR_HOME = 900400;
     constexpr uint32 QUEST_TOUR_PLACE = 900401;
@@ -327,6 +331,21 @@ namespace Housing
 class PlayerHousingMgr
 {
 public:
+    // What a mannequin wears, for the mirror image data its viewers ask for.
+    struct MannequinLook
+    {
+        uint32 displayId{0};
+        uint8 race{1};
+        uint8 gender{0};
+        uint8 classId{1};
+        uint8 skin{0};
+        uint8 face{0};
+        uint8 hair{0};
+        uint8 hairColor{0};
+        uint8 facial{0};
+        std::array<uint32, 11> displays{};  // in the order of Housing::MIRROR_SLOTS
+    };
+
     static PlayerHousingMgr* instance();
 
     // ---- lifecycle and player hooks (PlayerHousingMgr.cpp)
@@ -574,6 +593,10 @@ public:
     // What the mannequin wears onto the character, and what the character wears onto it.
     bool TradeStandGear(Player* player, uint32 placementId, std::string& reason);
     bool SendMannequinLook(WorldSession* session, ObjectGuid const& guid) const;
+    // For figures spawned outside a house (the home screen): the look its viewers get, and taking
+    // it away again with the figure.
+    void SetFigureLook(ObjectGuid const& guid, MannequinLook const& look);
+    void RemoveFigure(Map* map, ObjectGuid const& guid);
 
     // ---- collection (HousingCollection.cpp)
     bool IsUnlocked(Player const* player, Housing::PieceDefinition const& piece, std::set<uint32> const* known = nullptr) const;
@@ -730,20 +753,6 @@ private:
         uint32 gearMailed{0};
         uint32 toOthers{0};   // pieces someone else placed, back in their Collection
         std::vector<std::string> gearMissing;  // couldn't go back on a stand: no longer in the bags
-    };
-
-    // What a mannequin wears, for the mirror image data its viewers ask for.
-    struct MannequinLook
-    {
-        uint32 displayId{0};
-        uint8 race{1};
-        uint8 gender{0};
-        uint8 skin{0};
-        uint8 face{0};
-        uint8 hair{0};
-        uint8 hairColor{0};
-        uint8 facial{0};
-        std::array<uint32, 11> displays{};
     };
 
     struct PendingTrip
