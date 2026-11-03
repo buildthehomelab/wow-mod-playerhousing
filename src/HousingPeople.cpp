@@ -503,7 +503,7 @@ bool PlayerHousingMgr::ToggleLike(Player* player, std::string& reason)
 
 void PlayerHousingMgr::LogVisit(ObjectGuid::LowType ownerGuid, Player* visitor) const
 {
-    if (!visitor || visitor->GetSession()->IsBot() || HomeOf(visitor) == ownerGuid)
+    if (!visitor || visitor->GetSession()->IsHeadless() || HomeOf(visitor) == ownerGuid)
         return;
 
     // The last 50 arrivals are kept.

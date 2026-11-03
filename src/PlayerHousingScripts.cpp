@@ -69,7 +69,7 @@ public:
     {
         EnsureStewardAppearance(creature);
         // Playerbots don't do housing.
-        if (player->GetSession()->IsBot())
+        if (player->GetSession()->IsHeadless())
             return true;
 
         ClearGossipMenuFor(player);
@@ -92,7 +92,7 @@ public:
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
         CloseGossipMenuFor(player);
-        if (action == ACTION_KEY && !player->GetSession()->IsBot())
+        if (action == ACTION_KEY && !player->GetSession()->IsHeadless())
         {
             sPlayerHousingMgr->GiveKeyFromKrook(player);
             // Now with the key: his quests (the welcome tour starts here).
@@ -202,7 +202,7 @@ class mod_playerhousing_serverscript : public ServerScript
 public:
     mod_playerhousing_serverscript() : ServerScript("mod_playerhousing_serverscript", { SERVERHOOK_CAN_PACKET_RECEIVE }) { }
 
-    bool CanPacketReceive(WorldSession* session, WorldPacket& packet) override
+    bool CanPacketReceive(WorldSession* session, WorldPacket const& packet) override
     {
         if (packet.GetOpcode() != CMSG_GET_MIRRORIMAGE_DATA || packet.size() < sizeof(uint64))
             return true;
@@ -1227,8 +1227,11 @@ public:
     }
 };
 
+void AddHomeScreenScripts();
+
 void Addmod_playerhousingScripts()
 {
+    AddHomeScreenScripts();
     new npc_playerhousing_steward();
     new npc_playerhousing_mannequin();
     new mod_playerhousing_serverscript();

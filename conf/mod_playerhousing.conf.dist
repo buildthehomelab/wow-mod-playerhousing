@@ -132,3 +132,16 @@ PlayerHousing.HouseKey.DelaySeconds = 10
 ###############################################################################
 PlayerHousing.StewardEntry = 900200
 PlayerHousing.StewardDisplayId = 25384
+
+###############################################################################
+# PlayerHousing.Home.Map, .X, .Y, .Z, .O
+#    Where the home screen's viewers stand (see docs/HOME_SCREEN.md): the core's
+#    CharacterSelect.HomeScreen turns the home screen on, whether PlayerHousing.Enable
+#    is on or not. Every viewer moves here when the server starts. The default is
+#    Fenris Isle, in Silverpine Forest.
+###############################################################################
+PlayerHousing.Home.Map = 0
+PlayerHousing.Home.X = 736.94
+PlayerHousing.Home.Y = 727.85
+PlayerHousing.Home.Z = 36.55
+PlayerHousing.Home.O = 0

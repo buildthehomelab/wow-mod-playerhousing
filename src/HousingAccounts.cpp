@@ -23,7 +23,7 @@ ObjectGuid::LowType PlayerHousingMgr::HomeOf(Player const* player) const
     if (!player || !player->GetSession())
         return 0;
     ObjectGuid::LowType self = player->GetGUID().GetCounter();
-    if (player->GetSession()->IsBot())
+    if (player->GetSession()->IsHeadless())
         return self;  // bots never get housing; this keeps them apart from their owner's account
     return HomeOfAccount(player->GetSession()->GetAccountId(), self);
 }

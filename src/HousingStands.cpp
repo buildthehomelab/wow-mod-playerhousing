@@ -87,27 +87,27 @@ namespace
         std::vector<CharSectionsEntry const*> sections;
         for (uint32 i = 0; i < sCharSectionsStore.GetNumRows(); ++i)
             if (CharSectionsEntry const* entry = sCharSectionsStore.LookupEntry(i))
-                if (entry->Race == race && entry->Gender == gender && (entry->Flags & SECTION_FLAG_PLAYER) && !(entry->Flags & SECTION_FLAG_DEATH_KNIGHT))
+                if (entry->RaceID == race && entry->SexID == gender && (entry->Flags & SECTION_FLAG_PLAYER) && !(entry->Flags & SECTION_FLAG_DEATH_KNIGHT))
                     sections.push_back(entry);
         auto pick = [&](uint32 genType, std::function<bool(CharSectionsEntry const*)> fits, bool type) -> int32
         {
             std::vector<uint32> values;
             for (CharSectionsEntry const* entry : sections)
-                if (entry->GenType == genType && fits(entry))
-                    values.push_back(type ? entry->Type : entry->Color);
+                if (entry->BaseSection == genType && fits(entry))
+                    values.push_back(type ? entry->VariationIndex : entry->ColorIndex);
             return values.empty() ? -1 : int32(values[urand(0, uint32(values.size()) - 1)]);
         };
         auto any = [](CharSectionsEntry const*) { return true; };
         Features f;
         int32 skin = pick(0, any, false);
         f.skin = uint8(std::max(skin, 0));
-        int32 face = pick(1, [&](CharSectionsEntry const* e) { return int32(e->Color) == skin; }, true);
+        int32 face = pick(1, [&](CharSectionsEntry const* e) { return int32(e->ColorIndex) == skin; }, true);
         f.face = uint8(std::max(face >= 0 ? face : pick(1, any, true), 0));
         int32 hair = pick(3, any, true);
         f.hair = uint8(std::max(hair, 0));
-        int32 hairColor = pick(3, [&](CharSectionsEntry const* e) { return int32(e->Type) == hair; }, false);
+        int32 hairColor = pick(3, [&](CharSectionsEntry const* e) { return int32(e->VariationIndex) == hair; }, false);
         f.hairColor = uint8(std::max(hairColor, 0));
-        int32 facial = pick(2, [&](CharSectionsEntry const* e) { return int32(e->Color) == hairColor; }, true);
+        int32 facial = pick(2, [&](CharSectionsEntry const* e) { return int32(e->ColorIndex) == hairColor; }, true);
         f.facial = uint8(std::max(facial, 0));
         return f;
     }
