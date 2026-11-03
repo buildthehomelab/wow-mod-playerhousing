@@ -2,7 +2,9 @@
 
 <img src="icon.png" alt="" width="64" align="right">
 
-**Author:** [dudemcbro](https://github.com/dudemcbro) | **License:** GNU AGPL v3.0 |
+**Author:** [dudemcbro](https://github.com/dudemcbro) | **Fork of:**
+[dudemcbro/mod-playerhousing](https://github.com/dudemcbro/mod-playerhousing), adding a
+[home screen](docs/HOME_SCREEN.md) | **License:** GNU AGPL v3.0 |
 **Works with:** AzerothCore WotLK (3.3.5a)
 
 Player housing for AzerothCore (WotLK 3.3.5a), modeled on Lord of the Rings Online and Final

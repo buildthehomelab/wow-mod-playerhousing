@@ -1227,8 +1227,11 @@ public:
     }
 };
 
+void AddHomeScreenScripts();
+
 void Addmod_playerhousingScripts()
 {
+    AddHomeScreenScripts();
     new npc_playerhousing_steward();
     new npc_playerhousing_mannequin();
     new mod_playerhousing_serverscript();

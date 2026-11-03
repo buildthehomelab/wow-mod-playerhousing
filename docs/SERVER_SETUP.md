@@ -27,7 +27,7 @@ server with the module in a container, no setup needed.
 
 ```bash
 cd <azerothcore>/modules
-git clone https://github.com/dudemcbro/mod-playerhousing.git
+git clone https://github.com/buildthehomelab/wow-mod-playerhousing.git mod-playerhousing
 cd <azerothcore>/build
 cmake .. <your usual options, with -DTOOLS_BUILD=maps-only if the map tools aren't built yet>
 cmake --build . -j"$(nproc)"

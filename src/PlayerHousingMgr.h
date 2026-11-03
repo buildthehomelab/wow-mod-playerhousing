@@ -347,6 +347,7 @@ public:
     uint32 GetStewardDisplayId() const { return _stewardDisplayId; }
     bool IsStewardEntry(uint32 entry) const { return _enabled && entry == _stewardEntry; }
     static bool IsHousingPhase(uint32 phaseMask);
+    static uint32 PhaseOfOwner(ObjectGuid::LowType ownerGuid);
 
     // ---- travel (PlayerHousingMgr.cpp)
     bool EnterOwnHouse(Player* player, std::string& reason);

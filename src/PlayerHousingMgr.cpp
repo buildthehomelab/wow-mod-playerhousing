@@ -344,6 +344,11 @@ namespace
     }
 }
 
+uint32 PlayerHousingMgr::PhaseOfOwner(ObjectGuid::LowType ownerGuid)
+{
+    return GetHousePhase(ownerGuid);
+}
+
 void PlayerHousingMgr::OnBeforeSetPhaseMask(uint32 oldPhaseMask, uint32 newPhaseMask, bool& useCombinedPhases) const
 {
     // A house phase is an ID, not a set of bits: objects in one only see the exact same value,
